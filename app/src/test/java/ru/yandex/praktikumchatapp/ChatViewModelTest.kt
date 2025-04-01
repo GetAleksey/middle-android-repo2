@@ -1,5 +1,8 @@
+import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -31,13 +34,38 @@ class ChatViewModelTest {
 
     @Test
     fun `send message should update messages with MyMessage`() = runTest {
-        val message = Message.MyMessage("TestMessage")
+        val messageText = "TestMessage"
 
+        viewModel.messages.test {
+            viewModel.sendMyMessage(messageText)
+
+            val expectedMessage = Message.MyMessage(messageText)
+            val actualMessage = expectMostRecentItem().last()
+
+            assert(expectedMessage == actualMessage)
+        }
     }
 
     @Test
-    fun testReceiveMessage_concurrentMessages() = runTest {
-        val messagesToSend = (1..100).map { Message.MyMessage("Message $it") }
+    fun `send message should be thread safe`() = runTest {
+        val messagesToSend = (1..100).map { "Message $it" }
 
+        messagesToSend
+            .map { messageText ->
+                launch {
+                    viewModel.sendMyMessage(messageText)
+                }
+            }
+            .joinAll()
+
+        viewModel.messages.test {
+            val expectedMessages = messagesToSend
+                .map { messageText -> Message.MyMessage(messageText) }
+                .toSet()
+
+            val actualMessages = expectMostRecentItem().toSet()
+
+            assert(expectedMessages == actualMessages)
+        }
     }
 }
