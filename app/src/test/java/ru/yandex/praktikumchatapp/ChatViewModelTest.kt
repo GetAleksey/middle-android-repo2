@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import ru.yandex.praktikumchatapp.presentation.ChatViewModel
@@ -42,7 +43,7 @@ class ChatViewModelTest {
             val expectedMessage = Message.MyMessage(messageText)
             val actualMessage = expectMostRecentItem().last()
 
-            assert(expectedMessage == actualMessage)
+            assertEquals(expectedMessage, actualMessage)
         }
     }
 
@@ -65,7 +66,7 @@ class ChatViewModelTest {
 
             val actualMessages = expectMostRecentItem().toSet()
 
-            assert(expectedMessages == actualMessages)
+            assertEquals(expectedMessages, actualMessages)
         }
     }
 }
