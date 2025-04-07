@@ -10,12 +10,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
-import org.mockito.kotlin.verify
 import ru.yandex.praktikumchatapp.data.ChatApi
 import ru.yandex.praktikumchatapp.data.ChatRepository
 
@@ -39,7 +38,19 @@ class ChatRepositoryTest {
 
     @Test
     fun `getReplyMessage should return a non-empty string`() = runTest {
+        val replyText = "Hello"
 
+        `when`(chatApi.getReply())
+            .thenReturn(
+                flow {
+                    emit(replyText)
+                }
+            )
+
+        chatRepository.getReplyMessage().test {
+            assertEquals(replyText, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -59,7 +70,7 @@ class ChatRepositoryTest {
             )
 
         chatRepository.getReplyMessage().test {
-            assert(awaitItem() == replyText)
+            assertEquals(replyText, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
